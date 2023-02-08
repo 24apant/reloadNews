@@ -16,7 +16,7 @@ import com.google.firebase.FirebaseOptions;
 
 
 
-public class HelloWorld implements HttpFunction {
+public class PerigonTest implements HttpFunction {
     private static final Logger logger = Logger.getLogger(HelloWorld.class.getName());
     String[] categories = new String[]{"TrendingNews", "EconomyNews", "EnvironmentNews", "SocietyNews"};
     @Override
@@ -40,38 +40,30 @@ public class HelloWorld implements HttpFunction {
 
 
         AnayThread t1 = new AnayThread(logger, categories[0], null, db);
-        AnayThread t2 = new AnayThread(logger, categories[1], econKeys, db);
+        //AnayThread t2 = new AnayThread(logger, categories[1], econKeys, db);
 
         t1.start();
+        //t2.start();
 
-        logger.info("Started threads 1-2.");
+        logger.info("Started threads 1-4.");
 
         t1.join();
-        t1.interrupt();
-
-        t2.start();
-        t2.join();
-        t2.interrupt();
-        logger.info("Threads 1-2 exited.");
+        //t2.join();
+        //logger.info("Threads 1-2 exited.");
 
 
-        AnayThread t3 = new AnayThread(logger, categories[2], environmentKeys, db);
-        AnayThread t4 = new AnayThread(logger, categories[3], socKeys, db);
-
-        t3.start();
-
-        logger.info("Started threads 3-4.");
-
-        t3.join();
-        t3.interrupt();
-
-        t4.start();
-        t4.join();
-        t4.interrupt();
-
-
-
-        logger.info("Threads 3-4 exited.");
+//        AnayThread t3 = new AnayThread(logger, categories[2], environmentKeys, db);
+//        AnayThread t4 = new AnayThread(logger, categories[3], socKeys, db);
+//
+//        t3.start();
+//        t4.start();
+//
+//        logger.info("Started threads 3-4.");
+//
+//        t3.join();
+//        t4.join();
+//
+//        logger.info("Threads 3-4 exited.");
     }
 
 

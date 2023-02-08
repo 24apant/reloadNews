@@ -13,6 +13,15 @@
     </properties>
 
     <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/com.google.gms/google-services -->
+        <dependency>
+            <groupId>com.google.gms</groupId>
+            <artifactId>google-services</artifactId>
+            <version>3.1.1</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Required for Function primitives -->
         <dependency>
             <groupId>com.google.cloud.functions</groupId>
@@ -86,6 +95,14 @@
             <version>2.0.3</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.15.3</version>
+        </dependency>
+
+
 
         <!-- https://mvnrepository.com/artifact/com.google.firebase/firebase-firestore -->
     </dependencies>
@@ -98,6 +115,10 @@
                 <version>0.10.0</version>
                 <configuration>
                     <functionTarget>functions.HelloWorld</functionTarget>
+<!--                    <functionTarget>functions.reloadNews</functionTarget>-->
+<!--                    <functionTarget>functions.reloadNews2</functionTarget>-->
+<!--                    <functionTarget>functions.PerigonTest</functionTarget>-->
+
                 </configuration>
             </plugin>
             <!-- https://mvnrepository.com/artifact/com.google.firebase/firebase-firestore -->
