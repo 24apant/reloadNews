@@ -7,6 +7,7 @@ import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -32,7 +33,7 @@ public class AnayThread extends Thread{
     }
     public void run(){
         Retrofit retrofit = new Retrofit.Builder().baseUrl(apiInterface.BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
-        Retrofit periRetro = new Retrofit.Builder().baseUrl(perigonInterface.BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
+        //Retrofit periRetro = new Retrofit.Builder().baseUrl(perigonInterface.BASE_URL).addConverterFactory(GsonConverterFactory.create()).build();
         int numPages = 10;
         int safetyMultiplier = 4;
         String apiKey = "2a2429ecaaa4496680cf6d23b9e8dc0a";
@@ -42,12 +43,14 @@ public class AnayThread extends Thread{
         logger.info("In thread for category " + category);
 
 
-        ArrayList<ModelPerigonNews> news = new ArrayList<>();
+        ArrayList<ModelNews> news = new ArrayList<>();
+        Response<PerigonNews> res = null;
         String descNews = null;
         if(category.equals("TrendingNews")){
             try {
                 if (perigonEnabled){
-                    news = periRetro.create(perigonInterface.class).getTrendingNews(perigonKey,"us", "Non-news", "Politics", "date","false", "false", "Opinion","Paid","Roundup","Press","apnews.com/hub/ap-top-news","npr.org","washingtonpost.com","nytimes.com","wsj.com","bbc.com/news/world/us_and_canada","economist.com","theatlantic.com","politico.com").execute().body().getArticles();
+                    news = retrofit.create(apiInterface.class).getSortedNews("us",32,apiKey,"publishedAt").execute().body().getArticles();
+                    //news = retrofit.create(a.class).getTrendingNews(perigonKey,"us", "Non-news", "Politics", "date","false", "false", "Opinion","Paid","Roundup","Press","apnews.com/hub/ap-top-news","npr.org","washingtonpost.com","nytimes.com","wsj.com","bbc.com/news/world/us_and_canada","economist.com","theatlantic.com","politico.com").execute().body().getArticles();
                     logger.info("Done");
                 }
             } catch (IOException e) {
@@ -65,15 +68,14 @@ public class AnayThread extends Thread{
                 }
             }
             try {
-                if(category.equals("EconomyNews")) {
-                    news = periRetro.create(perigonInterface.class).getEconomyNews(perigonKey,"Business","Finance","us","false","false","Opinion","PaidNews","Roundup","PressRelease","Non-news","date","apnews.com/hub/ap-top-news","npr.org","washingtonpost.com","nytimes.com","wsj.com","bbc.com/news/world/us_and_canada","economist.com","theatlantic.com","politico.com").execute().body().getArticles();
-                }
-                else if (category.equals("EnvironmentNews")){
-                    news = periRetro.create(perigonInterface.class).getEnvironmentNews(perigonKey,"Environment","Tech","Health","us","false","false","Opinion","PaidNews","Roundup","PressRelease","Non-news","date","apnews.com/hub/ap-top-news","npr.org","washingtonpost.com","nytimes.com","wsj.com","bbc.com/news/world/us_and_canada","economist.com","theatlantic.com","politico.com").execute().body().getArticles();
-                }
-                else if (category.equals("SocietyNews")){
-                    logger.info("Entered Society");
-                    news = periRetro.create(perigonInterface.class).getSocietyNews(perigonKey,"us","false","false","Opinion","PaidNews","Roundup","PressRelease","Non-news","date","apnews.com/hub/ap-top-news","npr.org","washingtonpost.com","nytimes.com","wsj.com","bbc.com/news/world/us_and_canada","economist.com","theatlantic.com","politico.com","Racial Injustice","Coronavirus","Social Issues","Abortion").execute().body().getArticles();
+                switch (category) {
+                    case "EconomyNews":
+                    case "EnvironmentNews":
+                    case "SocietyNews":
+                        //news = (retrofit.create(perigonInterface.class).getEnvironmentNews(perigonKey, "Environment", "Tech", "Health", "us", "false", "false", "Opinion", "PaidNews", "Roundup", "PressRelease", "Non-news", "date", "apnews.com/hub/ap-top-news", "npr.org", "washingtonpost.com", "nytimes.com", "wsj.com", "bbc.com/news/world/us_and_canada", "economist.com", "theatlantic.com", "politico.com").request().url()));
+                        //res = retrofit.create(perigonInterface.class).getEconomyNews(perigonKey, "Business", "Finance", "us", "false", "false", "Opinion", "PaidNews", "Roundup", "PressRelease", "Non-news", "date", "apnews.com/hub/ap-top-news", "npr.org", "washingtonpost.com", "nytimes.com", "wsj.com", "bbc.com/news/world/us_and_canada", "economist.com", "theatlantic.com", "politico.com").execute();
+                        news = retrofit.create(apiInterface.class).getKeywordNews(apiKey, String.valueOf(finalKey),32).execute().body().getArticles();
+                        break;
                 }
                 logger.info("Category: " + category);
 
@@ -92,7 +94,7 @@ public class AnayThread extends Thread{
         String[] undesiredWords = new String[]{" sex "," shit "," ass ", " Sex ", " vagina ", " love-dovey ", " sexual ", " WWE ", " Flirty ", "TikTok", " erectile dysfunction ", " Black Friday ", " AEW ", "Cyber Monday"};
         String[] unwantedURLs = new String[]{"tmz","elle.com","yourtango", "buzzfeed.com", "tvshowbiz", "dailymail.co.uk", "theathletic.com", "bleedinggreen", "espn.com/nfl", "denverpost.com", "youtube.com", "ft.com", "eonline.com", "variety.com"};
         for(int x = 0; x < news.size();x++){
-            if(news.get(x).getContent() == null){
+            if(news.get(x).getDescription() == null){
                 logger.info("Released article for null description from category " + category + " article " + x);
                 news.remove(x);
                 x--;
@@ -130,15 +132,15 @@ public class AnayThread extends Thread{
 
         }
         logger.info(String.valueOf(news.size()));
-        ArrayList<ModelPerigonNews> newNews = new ArrayList<>();
+        ArrayList<ModelNews> newNews = new ArrayList<>();
         for (int i = 0; i < numPages; i++){
-            if(news.get(i).getImageUrl().equals("")){
+            if(news.get(i).getUrlToImage().equals("")){
                 // set it to a default image online
                 if(news.get(i).getUrl().contains("apnews")){
-                    news.get(i).setImageUrl("https://www.greenpeace.org/usa/wp-content/uploads/2018/08/ap-news-logo.png");
+                    news.get(i).setUrlToImage("https://www.greenpeace.org/usa/wp-content/uploads/2018/08/ap-news-logo.png");
                 }
                 else if (news.get(i).getUrl().contains("politico")){
-                    news.get(i).setImageUrl("https://newamericanleaders.org/wp-content/uploads/2016/12/news-logo-politico.png");
+                    news.get(i).setUrlToImage("https://newamericanleaders.org/wp-content/uploads/2016/12/news-logo-politico.png");
                 }
             }
             newNews.add(news.get(i));
@@ -152,7 +154,7 @@ public class AnayThread extends Thread{
 
         for (int x=0; x< numPages;x++){
             HashMap<String, Object> mainMap = new HashMap<>();
-            ModelPerigonNews n = news.get(x);
+            ModelNews n = news.get(x);
 
 
             String url = n.getUrl();
@@ -161,13 +163,13 @@ public class AnayThread extends Thread{
 
             // bad words
 
-            summary = n.getContent();
+            summary = n.getDescription();
             try{
 
                 if(url.contains("youtube")){
                 }
                 else{
-                    String ps2 = n.getContent();
+                    String ps2 = n.getDescription();
                     Document doc2 = Jsoup
                                 .connect(url)
                                 .timeout(3*1000)
@@ -217,11 +219,11 @@ public class AnayThread extends Thread{
             }
 
             mainMap.put("description", summary);
-            mainMap.put("author", n.getAuthorsByline() + "   " + n.getPubDate());
+            mainMap.put("author", n.getAuthor() + "   " + n.getPublishedAt());
             mainMap.put("title", n.getTitle());
             mainMap.put("url", n.getUrl());
-            mainMap.put("urlToImage", n.getImageUrl());
-            mainMap.put("publishedAt", n.getPubDate());
+            mainMap.put("urlToImage", n.getUrlToImage());
+            mainMap.put("publishedAt", n.getPublishedAt());
             mainMap.put("upVoteCt", n.getUpVoteCt());
             mainMap.put("downVoteCt", n.getDownVoteCt());
             mainMap.put("commentCt", n.getCommentCt());
